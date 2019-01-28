@@ -1,0 +1,17 @@
+{
+    "dev": {
+    "app_function": "inference.app",
+    "profile_name": "default",
+    "project_name": "recsys-app",
+    "runtime": "python3.6",
+    "s3_bucket": "srcolinas-recsys",
+    "aws_region": "us-east-1",
+    "exclude": [
+            "**.pkl", "**.csv", "**.txt", ".git", "**.md", ".gitignore",
+            "**.json", "**.zip", "sample_requests", "requirements.txt",
+            "venv", ".vscode", "**__pycache__", "zappa_settings.json",
+            "boto3*", "botocore*", "devenv", "prvenv", "trainer.py",
+            "data.py"
+        ]
+    }
+}

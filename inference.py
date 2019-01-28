@@ -1,29 +1,21 @@
-import collections
+import functools
 import pickle
 
 import boto3
 from flask import Flask
 import numpy as np
 
-BUCKET_NAME = 'srcolinas-recs'
+BUCKET_NAME = 'srcolinas-recsys'
 REGION_NAME = 'us-east-1'
 S3 = boto3.resource('s3')
-
-DataSet = collections.namedtuple(
-        'DataSet', [
-                'user_ids', 'item_ids', 'user_names', 'item_names',
-            ]
-    )
 
 app = Flask(__name__)
 
 class FactorsRecommender:
 
-    valid_query_keys = {'top_k', 'user_id'}
-
-    def __init__(self, dataset, user_factors, item_factors):
+    def __init__(self, item_names, user_factors, item_factors):
         
-        self.dataset = dataset
+        self.item_names = item_names
         self.user_factors = user_factors
         self.item_factors = item_factors
 
@@ -40,7 +32,7 @@ class FactorsRecommender:
 
         best_items = indices
         if return_names:
-            item_names = self.dataset.item_names
+            item_names = self.item_names
             if item_names is not None:
                 best_items = item_names[indices].tolist()
 
@@ -63,32 +55,20 @@ class FactorsRecommender:
         return scores, indices
 
 
-def memoize(f):
-    """
-    Caches the return value of a function for fast access in
-    subsequent calls.
-    
-    """
-    memo = {}
-    def helper(x):
-        if x not in memo:
-            memo[x] = f(x)
-        return memo[x]
-
-    return helper
-
-@memoize
+@functools.lru_cache()
 def load_recommender():
     
-    key = 'recs/model.pkl'
+    key = 'models/model.pkl'
     # Load model from S3 bucket
     response = S3.Object(bucket_name=BUCKET_NAME, key=key).get()
     
     # Load pickle model
     bytes_ = response['Body'].read()
-    dict_ = pickle.loads(bytes_) 
+    dict_ = pickle.loads(bytes_)
+    print(dict_)
+
     rec = FactorsRecommender(
-        dict_['dataset'], dict_['user_factors'], dict_['item_factors'])     
+        dict_['item_names'], dict_['user_factors'], dict_['item_factors'])     
     
     return rec
 
@@ -101,7 +81,7 @@ def hello():
 def about():
     return 'Welcome to the recommendations microservice'
 
-@app.route('/recommend/<user_id>')
+@app.route('/recommend/<int:user_id>')
 def recommend_to_user(user_id):
        
     recommender = load_recommender()

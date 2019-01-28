@@ -1,3 +1,6 @@
 .vscode
 devenv
 prvenv
+*.txt
+__pycache__
+*.zip

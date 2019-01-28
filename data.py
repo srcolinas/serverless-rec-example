@@ -51,7 +51,7 @@ def convert_ratings_df_to_matrix(
     users = data[:, 0] - 1 # correct for zero index
     items = data[:, 1] - 1 # correct for zero index
     values = data[:, 2]
-    return coo_matrix((values, (users, items)), shape=shape).toarray()
+    return coo_matrix((values, (users, items)), shape=shape)
 
 
 def get_interaction_matrix():
